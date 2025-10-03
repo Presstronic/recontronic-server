@@ -17,6 +17,33 @@ Recontronic Server is an intelligent reconnaissance and anomaly detection platfo
 - 📊 **Time-Series Analysis** - Track asset changes and deployment patterns over time
 - 🐳 **Production Ready** - Kubernetes-native with proper observability
 
+## ⚠️ Legal Disclaimer
+
+**READ THIS BEFORE USING THIS SOFTWARE**
+
+This tool is designed exclusively for **authorized security testing** as part of legitimate bug bounty programs. By using this software, you agree to the following:
+
+### Authorized Use Only
+- ✅ **DO** use only on bug bounty programs where you are enrolled
+- ✅ **DO** respect all program rules, scope limitations, and rate limits
+- ✅ **DO** obtain explicit authorization before testing any systems
+- ✅ **DO** follow responsible disclosure practices
+- ❌ **DO NOT** use on systems without explicit permission
+- ❌ **DO NOT** exceed the scope defined by bug bounty programs
+- ❌ **DO NOT** use for any illegal or unauthorized activities
+
+### Your Responsibility
+You are solely responsible for:
+- Ensuring you have proper authorization for all testing activities
+- Complying with all applicable local, state, national, and international laws
+- Following bug bounty program terms of service
+- Any consequences of misuse of this software
+
+### No Warranty
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+**Unauthorized access to computer systems is illegal.** This tool is for security researchers operating within legal boundaries only.
+
 ## 🏗️ Architecture
 
 ```
@@ -37,6 +64,12 @@ Recontronic Server is an intelligent reconnaissance and anomaly detection platfo
 │  └──────────────────────────────────────────┘          │
 └─────────────────────────────────────────────────────────┘
 ```
+
+**Why TimescaleDB?** It's PostgreSQL with time-series superpowers. One database handles everything:
+- Regular tables (programs, users, scan_jobs)
+- Time-series optimized tables (assets, anomalies) with automatic compression
+- River job queue tables
+- 1000x faster time-range queries, 90% storage savings with compression
 
 ## 🚀 Quick Start
 
@@ -82,7 +115,7 @@ docker-compose up -d
 Services:
 - **API Server**: http://localhost:8080
 - **TimescaleDB**: localhost:5432
-- **Redis**: localhost:6379
+- **Redis**: localhost:6379 (optional - River uses Postgres)
 
 ### Production Deployment (Kubernetes)
 
@@ -117,12 +150,12 @@ See [docs/deployment.md](docs/deployment.md) for detailed production deployment 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
 | **Language** | Go 1.21+ | High-performance, concurrent processing |
-| **Database** | TimescaleDB | Time-series optimized PostgreSQL |
-| **Queue** | River | Postgres-backed job queue |
+| **Database** | TimescaleDB | Time-series optimized PostgreSQL (one DB for everything!) |
+| **Queue** | River | Postgres-backed job queue (no Redis needed) |
 | **API** | Chi Router | Lightweight HTTP routing |
 | **Orchestration** | Kubernetes (k3s) | Container orchestration |
 | **IaC** | Terraform | Infrastructure as Code |
-| **Recon Tools** | subfinder, httpx, amass | Asset discovery |
+| **Recon Tools** | subfinder, httpx, amass | Asset discovery and probing |
 
 ## 🎮 Usage Example
 
@@ -191,6 +224,10 @@ See the [v1.0 MVP Milestone](https://github.com/yourusername/recontronic-server/
 
 This project is currently in private development. Contribution guidelines will be published when the project is open sourced.
 
+**Planned for open source release:** Q1 2026
+
+If you're interested in contributing once the project is public, please watch this repository for updates.
+
 ## 📋 Makefile Commands
 
 ```bash
@@ -203,6 +240,7 @@ make migrate-up       # Apply database migrations
 make migrate-down     # Rollback database migrations
 make docker-build     # Build Docker images
 make clean            # Clean build artifacts
+make help             # Show all available commands
 ```
 
 ## 🔧 Environment Variables
@@ -214,18 +252,27 @@ Key configuration variables (see `.env.example` for complete list):
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=recon_platform
+DB_USER=postgres
 DB_PASSWORD=your_secure_password
 
 # API
 REST_API_PORT=8080
-API_KEY=your_api_key
+API_KEY=your_api_key_here
 
 # Alerts
+DISCORD_ENABLED=true
 DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+SLACK_ENABLED=false
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
 
 # Logging
 LOG_LEVEL=info
+LOG_FORMAT=json
+
+# Scanning
+DEFAULT_SCAN_FREQUENCY=1h
+MAX_CONCURRENT_SCANS=5
+SCAN_TIMEOUT=30m
 ```
 
 ## 🐛 Troubleshooting
@@ -257,26 +304,79 @@ which subfinder httpx
 kubectl logs -l app=worker -n recon-platform --tail=100
 ```
 
+**Rate limiting issues:**
+```bash
+# Adjust scan frequency in program configuration
+# Reduce MAX_CONCURRENT_SCANS in environment variables
+# Add delays between requests (configure in worker)
+```
+
 See [docs/troubleshooting.md](docs/troubleshooting.md) for more solutions.
+
+## 🔒 Security Best Practices
+
+When deploying Recontronic:
+
+1. **API Keys**: Use strong, randomly generated API keys (32+ characters)
+2. **Secrets Management**: Store credentials in Kubernetes Secrets, never in code
+3. **Network Security**: Use firewalls, restrict API access to known IPs
+4. **Rate Limiting**: Configure appropriate rate limits to respect target systems
+5. **Logging**: Enable audit logging for all scan activities
+6. **Updates**: Keep recon tools and dependencies up to date
+
+## 💰 Cost Optimization
+
+Running costs for Recontronic Server:
+
+| Deployment | Monthly Cost | Best For |
+|------------|--------------|----------|
+| **Local/Dev** | $0 | Development, testing |
+| **VPS (Contabo)** | $7-24 | 1-10 programs, personal use |
+| **Cloud (DigitalOcean)** | $24-100 | 10-50 programs, team use |
+| **Production** | $100-500 | 50+ programs, enterprise |
+
+**Tips to reduce costs:**
+- Use a single VPS with k3s instead of managed Kubernetes
+- Enable TimescaleDB compression (saves 90% storage)
+- Set appropriate data retention policies
+- Use spot/preemptible instances for workers
 
 ## 📝 License
 
 License: TBD (planning to open source in the future)
 
-Currently all rights reserved.
+Currently all rights reserved. When open sourced, this project will likely use the MIT License to maximize accessibility for the security research community.
 
 ## 🙏 Acknowledgments
 
-Built with:
-- [ProjectDiscovery](https://github.com/projectdiscovery) tools (subfinder, httpx, nuclei)
-- [TimescaleDB](https://www.timescale.com/) for time-series data
-- [River](https://github.com/riverqueue/river) for job processing
-- [Chi](https://github.com/go-chi/chi) for HTTP routing
+Built with and inspired by:
+- [ProjectDiscovery](https://github.com/projectdiscovery) tools (subfinder, httpx, nuclei) - MIT License
+- [TimescaleDB](https://www.timescale.com/) for time-series data - Apache 2.0 License
+- [River](https://github.com/riverqueue/river) for job processing - MIT License
+- [Chi](https://github.com/go-chi/chi) for HTTP routing - MIT License
+- The bug bounty and security research community
+
+Special thanks to all bug bounty hunters who inspired this project.
+
+## 🎓 Learning Resources
+
+If you're new to bug bounty hunting or reconnaissance:
+
+- [HackerOne University](https://www.hacker101.com/)
+- [Bugcrowd University](https://www.bugcrowd.com/hackers/bugcrowd-university/)
+- [OWASP Testing Guide](https://owasp.org/www-project-web-security-testing-guide/)
+- [ProjectDiscovery Blog](https://blog.projectdiscovery.io/)
 
 ## 📬 Contact
 
-For questions or issues, please open an issue on GitHub.
+For questions, issues, or security concerns:
+- Open an issue on GitHub
+- Email: security@yourproject.com (for security vulnerabilities only)
+
+**Security Disclosure**: If you find a security vulnerability in Recontronic itself, please report it responsibly. Do not open a public issue. Email security@yourproject.com with details.
 
 ---
 
-**⚠️ Disclaimer:** This tool is intended for authorized security testing only. Always obtain proper authorization before testing any systems. Follow responsible disclosure practices and bug bounty program rules.
+**Built with ❤️ for the bug bounty community**
+
+*Remember: With great automation comes great responsibility. Always hunt ethically and legally.*
