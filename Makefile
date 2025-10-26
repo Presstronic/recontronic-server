@@ -57,9 +57,11 @@ test-coverage: test
 
 ## lint: Run linter
 lint:
-	@echo "$(BLUE)Running linter...$(NC)"
-	@which golangci-lint > /dev/null || (echo "$(RED)golangci-lint not installed. Installing...$(NC)" && go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest)
-	@golangci-lint run --timeout 5m
+	@echo "$(BLUE)Running go vet...$(NC)"
+	@go vet ./...
+	@echo "$(BLUE)Running staticcheck...$(NC)"
+	@which staticcheck > /dev/null 2>&1 || (echo "$(BLUE)Installing staticcheck...$(NC)" && go install honnef.co/go/tools/cmd/staticcheck@latest)
+	@$(shell go env GOPATH)/bin/staticcheck ./...
 	@echo "$(GREEN)✓ Linting completed$(NC)"
 
 ## fmt: Format code
