@@ -145,9 +145,12 @@ ssl/
 certs/
 
 # API keys and tokens (NEVER commit)
+# Note: Excludes .go files so source code isn't ignored
 *api-key*
 *apikey*
 *token*
+!*.go
+!*_test.go
 .api-keys
 credentials.json
 
