@@ -23,7 +23,7 @@ help:
 	@echo ""
 
 ## build: Build all binaries
-build: build-api build-worker build-cli
+build: build-api build-worker
 	@echo "$(GREEN)✓ All binaries built successfully$(NC)"
 
 ## build-api: Build API server binary

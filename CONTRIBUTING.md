@@ -39,13 +39,31 @@ We are committed to providing a welcoming and inspiring community for all. Pleas
 - Docker and Docker Compose
 - Git
 - Make
+- PostgreSQL client (psql) for running migrations
 - Understanding of bug bounty hunting and security research ethics
+
+### Technology Stack
+
+Familiarize yourself with these technologies used in the project:
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Language** | Go 1.25.3 | Primary development language |
+| **HTTP Router** | Chi v5 | Lightweight, composable HTTP routing |
+| **Configuration** | Viper | YAML config with environment overrides |
+| **Database** | TimescaleDB (PostgreSQL 16) | Time-series optimized storage |
+| **Database Driver** | lib/pq | PostgreSQL driver for Go |
+| **Password Hashing** | Argon2id (golang.org/x/crypto) | Secure password hashing |
+| **Validation** | go-playground/validator | Struct and input validation |
+| **Testing** | Standard Go testing | Unit and integration tests |
+| **Linting** | go vet, gofmt, staticcheck | Code quality tools |
+| **CI/CD** | GitHub Actions | Automated testing and builds |
 
 ### Setting Up Development Environment
 
 1. **Fork and clone the repository**
    ```bash
-   git clone https://github.com/yourusername/recontronic-server.git
+   git clone https://github.com/presstronic/recontronic-server.git
    cd recontronic-server
    ```
 
@@ -56,8 +74,9 @@ We are committed to providing a welcoming and inspiring community for all. Pleas
 
 3. **Set up configuration**
    ```bash
-   cp configs/.env.example configs/.env
-   # Edit configs/.env with your settings
+   cp configs/config.yaml configs/config.local.yaml
+   # Edit configs/config.local.yaml with your settings
+   # Or use environment variables with RECONTRONIC_ prefix
    ```
 
 4. **Start development environment**
@@ -144,7 +163,7 @@ import (
 
     "github.com/external/package"
 
-    "github.com/yourusername/recontronic-server/internal/models"
+    "github.com/presstronic/recontronic-server/internal/models"
 )
 
 // Constants

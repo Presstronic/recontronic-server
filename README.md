@@ -2,9 +2,11 @@
 
 > 24/7 automated reconnaissance platform for bug bounty hunters. Never miss that weekend deployment or 2 AM emergency fix again.
 
-[![Go Version](https://img.shields.io/badge/Go-1.25.3+-00ADD8?style=flat&logo=go)](https://go.dev/)
+[![CI](https://github.com/presstronic/recontronic-server/actions/workflows/ci.yml/badge.svg)](https://github.com/presstronic/recontronic-server/actions/workflows/ci.yml)
+[![Go Version](https://img.shields.io/badge/Go-1.25.3-00ADD8?style=flat&logo=go)](https://go.dev/)
+[![Go Report Card](https://goreportcard.com/badge/github.com/presstronic/recontronic-server)](https://goreportcard.com/report/github.com/presstronic/recontronic-server)
 [![License](https://img.shields.io/badge/license-TBD-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-MVP%20Development-yellow)](https://github.com/yourusername/recontronic-server/milestones)
+[![Status](https://img.shields.io/badge/status-Authentication%20Complete-green)](https://github.com/presstronic/recontronic-server)
 
 ## 🎯 Overview
 
@@ -66,9 +68,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ```
 
 **Why TimescaleDB?** It's PostgreSQL with time-series superpowers. One database handles everything:
-- Regular tables (programs, users, scan_jobs)
+- Regular tables (users, api_keys, programs)
 - Time-series optimized tables (assets, anomalies) with automatic compression
-- River job queue tables
+- Future: Job queue for background processing
 - 1000x faster time-range queries, 90% storage savings with compression
 
 ## 🚀 Quick Start
@@ -84,20 +86,23 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/recontronic-server.git
+git clone https://github.com/presstronic/recontronic-server.git
 cd recontronic-server
 
-# Copy environment template
-cp .env.example .env
-# Edit .env with your configuration
+# Install dependencies
+make deps
 
-# Start all services (DB, Redis, API, Workers)
-make dev
+# Start database (TimescaleDB + Redis)
+make docker-up
 
 # Run migrations
-make migrate-up
+psql -h localhost -U postgres -d recontronic \
+  -f migrations/20251026021554_create_users_and_api_keys.up.sql
 
-# Run tests
+# Start API server
+make run-api
+
+# In another terminal, run tests
 make test
 
 # Build binaries
@@ -135,32 +140,87 @@ kubectl apply -f k8s/
 kubectl get pods -n recon-platform
 ```
 
-See [docs/deployment.md](docs/deployment.md) for detailed production deployment guide.
+See the Kubernetes deployment section above for production deployment.
 
 ## 📖 Documentation
 
-- **[API Documentation](docs/api.md)** - REST API endpoints and usage
-- **[Architecture Guide](docs/architecture.md)** - System design and components
-- **[Development Guide](docs/development.md)** - How to contribute and develop
-- **[Deployment Guide](docs/deployment.md)** - Production deployment instructions
-- **[Configuration Reference](docs/configuration.md)** - Environment variables and settings
+- **[Authentication Guide](AUTH_IMPLEMENTATION.md)** - Complete authentication system documentation
+- **[Project Setup](PROJECT_SETUP.md)** - Detailed setup and architecture information
+- **[Contributing Guide](CONTRIBUTING.md)** - How to contribute and development workflow
+- **[Quick Start](#-quick-start)** - Get started with development
+- **[Usage Examples](#-usage-example)** - API usage examples
 
 ## 🛠️ Tech Stack
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
-| **Language** | Go 1.25.3+ | High-performance, concurrent processing |
-| **Database** | TimescaleDB | Time-series optimized PostgreSQL (one DB for everything!) |
-| **Queue** | River | Postgres-backed job queue (no Redis needed) |
-| **API** | Chi Router | Lightweight HTTP routing |
+| **Language** | Go 1.25.3 | High-performance, concurrent processing |
+| **Database** | TimescaleDB (PostgreSQL 16) | Time-series optimized PostgreSQL |
+| **API Router** | Chi v5 | Lightweight, composable HTTP routing |
+| **Authentication** | Argon2id + API Keys | Secure password hashing and token-based auth |
+| **Validation** | go-playground/validator | Request input validation |
+| **Configuration** | Viper | Environment and config management |
+| **Containerization** | Docker + Docker Compose | Development and production deployment |
 | **Orchestration** | Kubernetes (k3s) | Container orchestration |
-| **IaC** | Terraform | Infrastructure as Code |
-| **Recon Tools** | subfinder, httpx, amass | Asset discovery and probing |
+| **CI/CD** | GitHub Actions | Automated testing and builds |
+| **Recon Tools** | subfinder, httpx | Asset discovery and probing |
 
 ## 🎮 Usage Example
 
+### Authentication
+
 ```bash
-# Add a bug bounty program
+# Register a new user
+curl -X POST http://localhost:8080/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "johndoe",
+    "email": "john@example.com",
+    "password": "SecureP@ssw0rd123"
+  }'
+
+# Login and receive API key
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "johndoe",
+    "password": "SecureP@ssw0rd123"
+  }'
+
+# Response:
+# {
+#   "user": { "id": 1, "username": "johndoe", "email": "john@example.com" },
+#   "api_key": "rct_AbCdEf123456...",
+#   "message": "Login successful. Save this API key securely."
+# }
+
+# Get current user info (protected endpoint)
+curl -X GET http://localhost:8080/api/v1/auth/me \
+  -H "Authorization: Bearer rct_AbCdEf123456..."
+
+# Generate additional API key
+curl -X POST http://localhost:8080/api/v1/auth/keys \
+  -H "Authorization: Bearer rct_AbCdEf123456..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Production Key"
+  }'
+
+# List all your API keys
+curl -X GET http://localhost:8080/api/v1/auth/keys \
+  -H "Authorization: Bearer rct_AbCdEf123456..."
+
+# Revoke an API key
+curl -X DELETE http://localhost:8080/api/v1/auth/keys/2 \
+  -H "Authorization: Bearer rct_AbCdEf123456..."
+```
+
+### Coming Soon: Bug Bounty Program Management
+
+The following features are planned for future releases:
+
+```bash
+# Add a bug bounty program (coming soon)
 curl -X POST http://localhost:8080/api/v1/programs \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
@@ -170,22 +230,9 @@ curl -X POST http://localhost:8080/api/v1/programs \
     "scope": ["*.example.com", "*.example.io"],
     "scan_frequency": "1h"
   }'
-
-# Trigger a manual scan
-curl -X POST http://localhost:8080/api/v1/scans \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "program_id": 1,
-    "scan_type": "passive"
-  }'
-
-# Query anomalies
-curl -X GET "http://localhost:8080/api/v1/anomalies?min_priority=70&unreviewed=true" \
-  -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
-Or use the [Recontronic CLI](https://github.com/yourusername/recontronic-cli) for a better experience.
+A dedicated [Recontronic CLI](https://github.com/presstronic/recontronic-cli) is planned for a better developer experience.
 
 ## 🧪 Testing
 
@@ -211,14 +258,38 @@ make lint
 **Current Phase:** MVP Development (v1.0)
 
 - [x] Project setup and architecture design
-- [ ] Core API endpoints (in progress)
+- [x] Authentication system (API key-based with Argon2id)
+- [x] Core API endpoints for user management
+- [x] CI/CD pipeline with GitHub Actions
+- [x] Docker containerization
 - [ ] Worker implementation with subfinder/httpx
 - [ ] Diff engine and anomaly detection
 - [ ] Discord/Slack alerting
 - [ ] Scheduled CronJobs
 - [ ] Production deployment
 
-See the [v1.0 MVP Milestone](https://github.com/yourusername/recontronic-server/milestone/1) for detailed progress.
+See the [v1.0 MVP Milestone](https://github.com/presstronic/recontronic-server/milestone/1) for detailed progress.
+
+### ✅ Completed: Authentication System
+
+The authentication system is fully implemented and production-ready:
+
+- **User Registration & Login**: Username/password with Argon2id hashing (64MB memory, 3 iterations)
+- **API Key Management**: Generate, list, and revoke long-lived API keys
+- **Secure Authentication**: Bearer token authentication via middleware
+- **Input Validation**: Comprehensive validation with go-playground/validator
+- **Database Schema**: Users and API keys tables with proper indexes
+- **100% Test Coverage**: All auth utilities thoroughly tested
+
+**Available Endpoints:**
+- `POST /api/v1/auth/register` - Create new user account
+- `POST /api/v1/auth/login` - Login and receive API key
+- `GET /api/v1/auth/me` - Get current user info (protected)
+- `POST /api/v1/auth/keys` - Generate additional API keys (protected)
+- `GET /api/v1/auth/keys` - List all user API keys (protected)
+- `DELETE /api/v1/auth/keys/{id}` - Revoke an API key (protected)
+
+See [AUTH_IMPLEMENTATION.md](AUTH_IMPLEMENTATION.md) for detailed documentation.
 
 ## 🤝 Contributing
 
@@ -243,37 +314,54 @@ make clean            # Clean build artifacts
 make help             # Show all available commands
 ```
 
-## 🔧 Environment Variables
+## 🔧 Configuration
 
-Key configuration variables (see `.env.example` for complete list):
+The server uses a YAML configuration file. Create `config.yaml` in the project root:
 
-```bash
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=recon_platform
-DB_USER=postgres
-DB_PASSWORD=your_secure_password
+```yaml
+server:
+  restport: 8080
+  grpcport: 9090  # Reserved for future use
+  environment: development
+  readtimeout: 15s
+  writetimeout: 15s
+  idletimeout: 60s
 
-# API
-REST_API_PORT=8080
-API_KEY=your_api_key_here
+database:
+  host: "localhost"
+  port: 5432
+  user: postgres
+  password: postgres
+  dbname: recontronic
+  sslmode: disable
+  maxopenconns: 25
+  maxidleconns: 5
+  connmaxlifetime: 5m
 
-# Alerts
-DISCORD_ENABLED=true
-DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
-SLACK_ENABLED=false
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+logging:
+  level: "info"  # debug, info, warn, error
+  format: "json" # json or text
+  output: "stdout"
 
-# Logging
-LOG_LEVEL=info
-LOG_FORMAT=json
+# Future: Worker and scanning configuration
+worker:
+  poolsize: 10
+  queuetype: postgres
 
-# Scanning
-DEFAULT_SCAN_FREQUENCY=1h
-MAX_CONCURRENT_SCANS=5
-SCAN_TIMEOUT=30m
+# Future: Alerting configuration
+alerting:
+  discord:
+    enabled: false
+    webhookurl: ""
+  slack:
+    enabled: false
+    webhookurl: ""
 ```
+
+Environment variables can override config values using the `RECONTRONIC_` prefix:
+- `RECONTRONIC_DATABASE_PASSWORD=secret` overrides `database.password`
+- `RECONTRONIC_SERVER_RESTPORT=9000` overrides `server.restport`
+- `RECONTRONIC_LOGGING_LEVEL=debug` overrides `logging.level`
 
 ## 🐛 Troubleshooting
 
@@ -311,7 +399,7 @@ kubectl logs -l app=worker -n recon-platform --tail=100
 # Add delays between requests (configure in worker)
 ```
 
-See [docs/troubleshooting.md](docs/troubleshooting.md) for more solutions.
+For more troubleshooting help, check the GitHub Issues or open a new issue with details about your problem.
 
 ## 🔒 Security Best Practices
 

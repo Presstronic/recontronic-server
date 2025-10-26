@@ -329,24 +329,29 @@ Common error codes:
 4. ✅ Revoke unused keys
 5. ✅ Use separate keys for different machines
 
-## Environment Variables
+## Configuration
 
+The server uses a YAML configuration file (`config.yaml`) with environment variable overrides. See the main README.md for the complete configuration structure.
+
+Example environment variable overrides:
 ```bash
 # Database
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_USER=postgres
-DATABASE_PASSWORD=your_password
-DATABASE_DBNAME=recontronic
-DATABASE_SSLMODE=disable  # Use 'require' in production
+RECONTRONIC_DATABASE_HOST=localhost
+RECONTRONIC_DATABASE_PORT=5432
+RECONTRONIC_DATABASE_USER=postgres
+RECONTRONIC_DATABASE_PASSWORD=your_password
+RECONTRONIC_DATABASE_DBNAME=recontronic
+RECONTRONIC_DATABASE_SSLMODE=disable  # Use 'require' in production
 
 # Server
-SERVER_RESTPORT=8080
-SERVER_ENVIRONMENT=development
+RECONTRONIC_SERVER_PORT=8080
 
-# Security
-SECURITY_ALLOWEDORIGINS=["*"]  # Restrict in production
+# Logging
+RECONTRONIC_LOGGING_LEVEL=info
+RECONTRONIC_LOGGING_FORMAT=json
 ```
+
+All environment variables use the `RECONTRONIC_` prefix and follow the structure of the YAML config file.
 
 ## Migration
 
