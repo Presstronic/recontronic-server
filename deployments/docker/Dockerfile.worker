@@ -32,13 +32,13 @@ RUN apk --no-cache add ca-certificates tzdata curl wget git
 RUN wget -qO- https://github.com/projectdiscovery/subfinder/releases/download/v2.6.3/subfinder_2.6.3_linux_amd64.zip -O subfinder.zip && \
     unzip subfinder.zip && \
     mv subfinder /usr/local/bin/ && \
-    rm subfinder.zip LICENSE.md README.md
+    rm -f subfinder.zip LICENSE.md README.md
 
 # Install httpx
 RUN wget -qO- https://github.com/projectdiscovery/httpx/releases/download/v1.3.7/httpx_1.3.7_linux_amd64.zip -O httpx.zip && \
     unzip httpx.zip && \
     mv httpx /usr/local/bin/ && \
-    rm httpx.zip LICENSE.md README.md
+    rm -f httpx.zip LICENSE.md README.md
 
 # Create non-root user
 RUN addgroup -g 1000 appuser && \
