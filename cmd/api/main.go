@@ -43,21 +43,34 @@ func main() {
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
+	programRepo := repository.NewProgramRepository(db)
+	scanJobRepo := repository.NewScanJobRepository(db)
+	assetRepo := repository.NewAssetRepository(db)
+	anomalyRepo := repository.NewAnomalyRepository(db)
+	findingRepo := repository.NewFindingRepository(db)
 
 	// Initialize services
 	authService := services.NewAuthService(userRepo)
+	programService := services.NewProgramService(programRepo)
+	scanJobService := services.NewScanJobService(scanJobRepo, programRepo)
+	findingService := services.NewFindingService(findingRepo, programRepo)
 
 	// Initialize validator
 	v := validator.New()
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(authService, v)
+	programHandler := handlers.NewProgramHandler(programService, v)
+	scanJobHandler := handlers.NewScanJobHandler(scanJobService, v)
+	assetHandler := handlers.NewAssetHandler(assetRepo)
+	anomalyHandler := handlers.NewAnomalyHandler(anomalyRepo, v)
+	findingHandler := handlers.NewFindingHandler(findingService, v)
 
 	// Initialize middleware
 	authMiddleware := authmiddleware.NewAuthMiddleware(authService)
 
 	// Setup router
-	r := setupRouter(cfg, authHandler, authMiddleware, db)
+	r := setupRouter(cfg, authHandler, programHandler, scanJobHandler, assetHandler, anomalyHandler, findingHandler, authMiddleware, db)
 
 	// Create HTTP server
 	srv := &http.Server{
@@ -93,7 +106,17 @@ func main() {
 	log.Println("✓ Server stopped gracefully")
 }
 
-func setupRouter(cfg *config.Config, authHandler *handlers.AuthHandler, authMiddleware *authmiddleware.AuthMiddleware, db interface{ Ping() error }) chi.Router {
+func setupRouter(
+	cfg *config.Config,
+	authHandler *handlers.AuthHandler,
+	programHandler *handlers.ProgramHandler,
+	scanJobHandler *handlers.ScanJobHandler,
+	assetHandler *handlers.AssetHandler,
+	anomalyHandler *handlers.AnomalyHandler,
+	findingHandler *handlers.FindingHandler,
+	authMiddleware *authmiddleware.AuthMiddleware,
+	db interface{ Ping() error },
+) chi.Router {
 	r := chi.NewRouter()
 
 	// Middleware
@@ -133,9 +156,34 @@ func setupRouter(cfg *config.Config, authHandler *handlers.AuthHandler, authMidd
 			r.Get("/auth/keys", authHandler.ListAPIKeys)
 			r.Delete("/auth/keys/{id}", authHandler.RevokeAPIKey)
 
-			// TODO: Add program routes
-			// TODO: Add scan routes
-			// TODO: Add anomaly routes
+			// Program routes
+			r.Post("/programs", programHandler.CreateProgram)
+			r.Get("/programs", programHandler.ListPrograms)
+			r.Get("/programs/{id}", programHandler.GetProgram)
+			r.Patch("/programs/{id}", programHandler.UpdateProgram)
+			r.Delete("/programs/{id}", programHandler.DeleteProgram)
+
+			// Scan routes
+			r.Post("/scans", scanJobHandler.CreateScanJob)
+			r.Get("/scans", scanJobHandler.ListScanJobs)
+			r.Get("/scans/{id}", scanJobHandler.GetScanJob)
+
+			// Asset routes
+			r.Get("/assets", assetHandler.ListAssets)
+			r.Get("/assets/counts", assetHandler.GetAssetCounts)
+
+			// Anomaly routes
+			r.Get("/anomalies", anomalyHandler.ListAnomalies)
+			r.Get("/anomalies/{id}", anomalyHandler.GetAnomaly)
+			r.Post("/anomalies/{id}/review", anomalyHandler.MarkAnomalyReviewed)
+			r.Get("/anomalies/counts", anomalyHandler.GetAnomalyCounts)
+
+			// Finding routes
+			r.Post("/findings", findingHandler.CreateFinding)
+			r.Get("/findings", findingHandler.ListFindings)
+			r.Get("/findings/{id}", findingHandler.GetFinding)
+			r.Patch("/findings/{id}", findingHandler.UpdateFinding)
+			r.Get("/findings/stats", findingHandler.GetBountyStats)
 		})
 	})
 
