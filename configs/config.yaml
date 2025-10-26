@@ -1,0 +1,39 @@
+server:
+  restport: 8080
+  grpcport: 9090
+  environment: development
+  readtimeout: 15s
+  writetimeout: 15s
+  idletimeout: 60s
+
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: postgres
+  dbname: recontronic
+  sslmode: disable
+  maxopenconns: 25
+  maxidleconns: 5
+  connmaxlifetime: 5m
+
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+
+worker:
+  concurrency: 10
+  queuename: recontronic
+
+logging:
+  level: info
+  format: json
+
+security:
+  apikey: "change-me-in-production"
+  jwtsecret: "change-me-in-production"
+  ratelimitrps: 100
+  allowedorigins:
+    - "*"

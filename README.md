@@ -2,7 +2,7 @@
 
 > 24/7 automated reconnaissance platform for bug bounty hunters. Never miss that weekend deployment or 2 AM emergency fix again.
 
-[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/Go-1.25.3+-00ADD8?style=flat&logo=go)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-TBD-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-MVP%20Development-yellow)](https://github.com/yourusername/recontronic-server/milestones)
 
@@ -75,7 +75,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ### Prerequisites
 
-- Go 1.21+
+- Go 1.25.3+
 - Docker & Docker Compose
 - kubectl (for k8s deployment)
 - Make (optional, for convenience commands)
@@ -149,7 +149,7 @@ See [docs/deployment.md](docs/deployment.md) for detailed production deployment 
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
-| **Language** | Go 1.21+ | High-performance, concurrent processing |
+| **Language** | Go 1.25.3+ | High-performance, concurrent processing |
 | **Database** | TimescaleDB | Time-series optimized PostgreSQL (one DB for everything!) |
 | **Queue** | River | Postgres-backed job queue (no Redis needed) |
 | **API** | Chi Router | Lightweight HTTP routing |

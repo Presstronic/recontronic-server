@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recontronic-config
+  namespace: recontronic
+data:
+  SERVER_RESTPORT: "8080"
+  SERVER_GRPCPORT: "9090"
+  SERVER_ENVIRONMENT: "production"
+  DATABASE_HOST: "timescaledb"
+  DATABASE_PORT: "5432"
+  DATABASE_DBNAME: "recontronic"
+  DATABASE_SSLMODE: "require"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  WORKER_CONCURRENCY: "10"
+  WORKER_QUEUENAME: "recontronic"
+  LOGGING_LEVEL: "info"
+  LOGGING_FORMAT: "json"

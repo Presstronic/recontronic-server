@@ -1,0 +1,63 @@
+# Build stage
+FROM golang:1.25.3-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache git make ca-certificates tzdata
+
+# Set working directory
+WORKDIR /build
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the worker application
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags="-w -s" \
+    -o /build/bin/worker \
+    ./cmd/worker
+
+# Final stage
+FROM alpine:latest
+
+# Install runtime dependencies and recon tools
+RUN apk --no-cache add ca-certificates tzdata curl wget git
+
+# Install subfinder
+RUN wget -qO- https://github.com/projectdiscovery/subfinder/releases/download/v2.6.3/subfinder_2.6.3_linux_amd64.zip -O subfinder.zip && \
+    unzip subfinder.zip && \
+    mv subfinder /usr/local/bin/ && \
+    rm subfinder.zip LICENSE.md README.md
+
+# Install httpx
+RUN wget -qO- https://github.com/projectdiscovery/httpx/releases/download/v1.3.7/httpx_1.3.7_linux_amd64.zip -O httpx.zip && \
+    unzip httpx.zip && \
+    mv httpx /usr/local/bin/ && \
+    rm httpx.zip LICENSE.md README.md
+
+# Create non-root user
+RUN addgroup -g 1000 appuser && \
+    adduser -D -u 1000 -G appuser appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /build/bin/worker /app/worker
+
+# Copy configuration files
+COPY --from=builder /build/configs /app/configs
+
+# Change ownership
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Run the worker
+ENTRYPOINT ["/app/worker"]

@@ -210,3 +210,7 @@ __pycache__/
 
 # VS Code workspace
 *.code-workspace
+
+# Project-specific files (private)
+ai-instructions.txt
+early-vision-doc.md
