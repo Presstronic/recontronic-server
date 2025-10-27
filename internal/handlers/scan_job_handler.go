@@ -83,8 +83,8 @@ func (h *ScanJobHandler) ListScanJobs(w http.ResponseWriter, r *http.Request) {
 
 	// Filter by program ID if provided
 	if programIDStr != "" {
-		programID, err := strconv.Atoi(programIDStr)
-		if err != nil {
+		programID, parseErr := strconv.Atoi(programIDStr)
+		if parseErr != nil {
 			respondError(w, http.StatusBadRequest, "invalid program_id")
 			return
 		}

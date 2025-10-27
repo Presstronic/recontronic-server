@@ -50,8 +50,8 @@ func (h *AnomalyHandler) ListAnomalies(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	if programIDStr != "" {
-		programID, err := strconv.Atoi(programIDStr)
-		if err != nil {
+		programID, parseErr := strconv.Atoi(programIDStr)
+		if parseErr != nil {
 			respondError(w, http.StatusBadRequest, "invalid program_id")
 			return
 		}
