@@ -30,14 +30,14 @@ type CreateAnomalyReviewRequest struct {
 
 // CreateFindingRequest represents a request to create a new finding
 type CreateFindingRequest struct {
-	ProgramID         int     `json:"program_id" validate:"required,min=1"`
-	AnomalyID         *int    `json:"anomaly_id,omitempty"`
-	Title             string  `json:"title" validate:"required,min=1,max=500"`
-	Severity          string  `json:"severity" validate:"required,oneof=critical high medium low info"`
-	VulnerabilityType *string `json:"vulnerability_type,omitempty" validate:"omitempty,max=100"`
+	ProgramID         int      `json:"program_id" validate:"required,min=1"`
+	AnomalyID         *int     `json:"anomaly_id,omitempty"`
+	Title             string   `json:"title" validate:"required,min=1,max=500"`
+	Severity          string   `json:"severity" validate:"required,oneof=critical high medium low info"`
+	VulnerabilityType *string  `json:"vulnerability_type,omitempty" validate:"omitempty,max=100"`
 	CVSSScore         *float64 `json:"cvss_score,omitempty" validate:"omitempty,min=0,max=10"`
-	Notes             *string `json:"notes,omitempty"`
-	POC               *string `json:"poc,omitempty"`
+	Notes             *string  `json:"notes,omitempty"`
+	POC               *string  `json:"poc,omitempty"`
 }
 
 // UpdateFindingRequest represents a request to update a finding

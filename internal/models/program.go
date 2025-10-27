@@ -8,16 +8,16 @@ import (
 
 // Program represents a bug bounty program being monitored
 type Program struct {
-	ID             int       `json:"id"`
-	Name           string    `json:"name"`
-	Platform       string    `json:"platform"`
-	Scope          Scope     `json:"scope"`
-	ScanFrequency  string    `json:"scan_frequency"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
-	LastScannedAt  *time.Time `json:"last_scanned_at,omitempty"`
-	IsActive       bool      `json:"is_active"`
-	Metadata       Metadata  `json:"metadata,omitempty"`
+	ID            int        `json:"id"`
+	Name          string     `json:"name"`
+	Platform      string     `json:"platform"`
+	Scope         Scope      `json:"scope"`
+	ScanFrequency string     `json:"scan_frequency"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
+	LastScannedAt *time.Time `json:"last_scanned_at,omitempty"`
+	IsActive      bool       `json:"is_active"`
+	Metadata      Metadata   `json:"metadata,omitempty"`
 }
 
 // Scope represents the in-scope domains/assets for a program

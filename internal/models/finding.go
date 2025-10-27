@@ -37,13 +37,13 @@ const (
 
 // FindingStatus constants
 const (
-	FindingStatusDraft          = "draft"
-	FindingStatusSubmitted      = "submitted"
-	FindingStatusTriaged        = "triaged"
-	FindingStatusAccepted       = "accepted"
-	FindingStatusDuplicate      = "duplicate"
-	FindingStatusInformative    = "informative"
-	FindingStatusNotApplicable  = "not_applicable"
-	FindingStatusResolved       = "resolved"
-	FindingStatusBountyAwarded  = "bounty_awarded"
+	FindingStatusDraft         = "draft"
+	FindingStatusSubmitted     = "submitted"
+	FindingStatusTriaged       = "triaged"
+	FindingStatusAccepted      = "accepted"
+	FindingStatusDuplicate     = "duplicate"
+	FindingStatusInformative   = "informative"
+	FindingStatusNotApplicable = "not_applicable"
+	FindingStatusResolved      = "resolved"
+	FindingStatusBountyAwarded = "bounty_awarded"
 )
